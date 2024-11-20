@@ -1,0 +1,53 @@
+version: '3.8'
+services:
+  frontend:
+    build: ./frontend
+    env_file:
+      - frontend/.env
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+    networks:
+      - frontend-network
+  
+
+  backend:
+    build:
+      dockerfile: ./backend
+    env_file:
+      - backend/.env
+    ports:
+      - "8000:8000"
+    networks:
+      - frontend-network
+      - backend-network
+    depends_on:
+      - db
+
+  db:
+    image: postgres:13
+    # volumes:
+    #   - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: changethis123
+    networks:
+      - backend-network
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    networks:
+      - backend-network
+
+networks:
+  frontend-network:
+  backend-network:
+# volumes:
+#   postgres_data: 
