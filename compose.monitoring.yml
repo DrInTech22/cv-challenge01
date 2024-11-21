@@ -8,7 +8,7 @@ services:
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
-      - frontend
+      - frontend-network
 
   grafana:
     image: grafana/grafana:latest
@@ -17,7 +17,7 @@ services:
     volumes:
       - ./monitoring/grafana:/var/lib/grafana
     networks:
-      - frontend
+      - frontend-network
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.47.0
@@ -29,11 +29,11 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
     networks:
-      - frontend
-      - backend
+      - frontend-network
+      - backend-network
 
 networks:
-  frontend:
+  frontend-network:
     external: true
-  backend:
+  backend-network:
     external: true
