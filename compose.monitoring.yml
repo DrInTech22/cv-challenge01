@@ -6,16 +6,17 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     volumes:
-      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
       - frontend-network
-
+    depends_on:
+      - cadvisor
   grafana:
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
     volumes:
-      - ./monitoring/grafana:/var/lib/grafana
+      - grafana:/var/lib/grafana
     networks:
       - frontend-network
 
@@ -31,9 +32,22 @@ services:
     networks:
       - frontend-network
       - backend-network
+    depends_on:
+      - backend
+      - frontend
+      - adminer
+      - traefik
+      - db
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - 3100:3100
+    volumes:
+      - ./monitoring/loki-config.yml:/etc/loki/loki-config.yaml
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - ./monitoring/promtail-config.yml:/etc/promtail/promtail-config.yaml
 
-networks:
-  frontend-network:
-    external: true
-  backend-network:
-    external: true
+volumes:
+  grafana:

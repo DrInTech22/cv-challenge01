@@ -1,3 +1,5 @@
+include:
+  - compose.monitoring.yml
 services:
   frontend:
     build:
