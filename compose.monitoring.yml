@@ -19,6 +19,9 @@ services:
       - grafana:/var/lib/grafana
     networks:
       - frontend-network
+    depends_on:
+      - loki
+     
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.47.0
@@ -42,12 +45,19 @@ services:
     image: grafana/loki:latest
     ports:
       - 3100:3100
+    networks:
+      - frontend-network
     volumes:
       - ./monitoring/loki-config.yml:/etc/loki/loki-config.yaml
   promtail:
     image: grafana/promtail:latest
+    networks:
+      - frontend-network
+      - backend-network
     volumes:
       - ./monitoring/promtail-config.yml:/etc/promtail/promtail-config.yaml
+    depends_on:
+      - loki
 
 volumes:
   grafana:
