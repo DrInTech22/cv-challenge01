@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   frontend:
     build:
@@ -9,10 +8,14 @@ services:
       - backend
     ports:
       - "5173:5173"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.backend.rule=(Host(`cv01.drintech.online`) || Host(`www.cv01.drintech.online`)"
+      - traefik.http.routers.backend.entrypoints=websecure
+      - traefik.http.routers.backend.tls.certresolver=letsencryptresolver
     networks:
       - frontend-network
   
-
   backend:
     build:
       context: ./backend
@@ -23,6 +26,11 @@ services:
     networks:
       - frontend-network
       - backend-network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.backend.rule=(Host(`cv01.drintech.online`) && (PathPrefix(`/api`) || PathPrefix(`/redoc`) || PathPrefix(`/docs`)))
+      - traefik.http.routers.backend.entrypoints=websecure
+      - traefik.http.routers.backend.tls.certresolver=letsencryptresolver
     depends_on:
       - db
 
@@ -46,7 +54,7 @@ services:
       ADMINER_DEFAULT_SERVER: db
     labels:
       - traefik.enable=true
-      - traefik.http.routers.backend.rule=Host(`${DOMAINNAME}`) && PathPrefix(`/db`)
+      - traefik.http.routers.backend.rule=Host(`cv01.drintech.online`) && PathPrefix(`/db`)
       - traefik.http.routers.backend.entrypoints=websecure
       - traefik.http.routers.backend.tls.certresolver=letsencryptresolver
     networks:
@@ -63,7 +71,7 @@ services:
       - --providers.docker=true
       - --providers.docker.exposedByDefault=false # require containers to define `traefik.enable=true` to be exposed
       - --api
-      - --certificatesresolvers.letsencryptresolver.acme.email=${EMAIL}
+      - --certificatesresolvers.letsencryptresolver.acme.email=drintech222@gmail.com
       - --certificatesresolvers.letsencryptresolver.acme.storage=/acme.json
       - --certificatesresolvers.letsencryptresolver.acme.tlschallenge=true
     ports:
@@ -73,17 +81,17 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro # allow Traefik to listen to Docker events
-      - ${TRAEFIK_DIR}/acme.json:/acme.json # stores ACME (HTTPS) certificates
+      - /mnt/media/traefik/acme.json:/acme.json # stores ACME (HTTPS) certificates
     labels:
       - traefik.enable=true
 
       # "admin" middleware definition
       # to be used by services that do not have their own security
-      - traefik.http.middlewares.admin.basicauth.users=${HTTP_BASIC_USER}:${HTTP_BASIC_PWD}
+      #- traefik.http.middlewares.admin.basicauth.users=your_username:your_password
 
       # expose the traefik dashboard
       - traefik.http.routers.traefik.entrypoints=websecure
-      - traefik.http.routers.traefik.rule=Host(`traefik.${DOMAINNAME}`)
+      - traefik.http.routers.traefik.rule=Host(`proxy.cv01.drintech.online`)
       - traefik.http.routers.traefik.service=api@internal
       - traefik.http.routers.traefik.middlewares=admin
       - traefik.http.routers.traefik.tls.certresolver=letsencryptresolver
