@@ -10,12 +10,12 @@ services:
       - "5173:5173"
     labels:
       - traefik.enable=true
-      - traefik.http.routers.backend.rule=(Host(`cv01.drintech.online`) || Host(`www.cv01.drintech.online`)"
-      - traefik.http.routers.backend.entrypoints=websecure
-      - traefik.http.routers.backend.tls.certresolver=letsencryptresolver
+      - traefik.http.routers.frontend.rule=(Host(`cv01.drintech.online`) || Host(`www.cv01.drintech.online`))
+      - traefik.http.routers.frontend.entrypoints=websecure
+      - traefik.http.routers.frontend.tls.certresolver=letsencryptresolver
     networks:
       - frontend-network
-  
+
   backend:
     build:
       context: ./backend
@@ -36,8 +36,6 @@ services:
 
   db:
     image: postgres:13
-    # volumes:
-    #   - postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: app
       POSTGRES_USER: app
@@ -54,9 +52,9 @@ services:
       ADMINER_DEFAULT_SERVER: db
     labels:
       - traefik.enable=true
-      - traefik.http.routers.backend.rule=Host(`cv01.drintech.online`) && PathPrefix(`/db`)
-      - traefik.http.routers.backend.entrypoints=websecure
-      - traefik.http.routers.backend.tls.certresolver=letsencryptresolver
+      - traefik.http.routers.adminer.rule=Host(`db.cv01.drintech.online`)
+      - traefik.http.routers.adminer.entrypoints=websecure
+      - traefik.http.routers.adminer.tls.certresolver=letsencryptresolver
     networks:
       - backend-network
 
@@ -69,7 +67,7 @@ services:
       - --entrypoints.web.http.redirections.entryPoint.scheme=https
       - --entrypoints.websecure.address=:443
       - --providers.docker=true
-      - --providers.docker.exposedByDefault=false # require containers to define `traefik.enable=true` to be exposed
+      - --providers.docker.exposedByDefault=false
       - --api
       - --certificatesresolvers.letsencryptresolver.acme.email=drintech222@gmail.com
       - --certificatesresolvers.letsencryptresolver.acme.storage=/acme.json
@@ -80,20 +78,13 @@ services:
       - 8080:8080
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro # allow Traefik to listen to Docker events
-      - /mnt/media/traefik/acme.json:/acme.json # stores ACME (HTTPS) certificates
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /mnt/media/traefik/acme.json:/acme.json
     labels:
       - traefik.enable=true
-
-      # "admin" middleware definition
-      # to be used by services that do not have their own security
-      #- traefik.http.middlewares.admin.basicauth.users=your_username:your_password
-
-      # expose the traefik dashboard
       - traefik.http.routers.traefik.entrypoints=websecure
       - traefik.http.routers.traefik.rule=Host(`proxy.cv01.drintech.online`)
       - traefik.http.routers.traefik.service=api@internal
-      - traefik.http.routers.traefik.middlewares=admin
       - traefik.http.routers.traefik.tls.certresolver=letsencryptresolver
     env_file:
       - traefik/.env
@@ -104,5 +95,5 @@ services:
 networks:
   frontend-network:
   backend-network:
-# volumes:
-#   postgres_data:
+volumes:
+  postgres_data:
