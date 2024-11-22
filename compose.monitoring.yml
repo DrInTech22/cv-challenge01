@@ -8,7 +8,8 @@ services:
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
-      - frontend-network
+      - temp-monit
+      #- frontend-network
     depends_on:
       - cadvisor
     labels:
@@ -38,7 +39,8 @@ services:
     volumes:
       - grafana:/var/lib/grafana
     networks:
-      - frontend-network
+      #- frontend-network
+      - temp-monit
     depends_on:
       - loki
     labels:
@@ -71,8 +73,9 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
     networks:
-      - frontend-network
-      - backend-network
+      - temp-monit
+      #- frontend-network
+        #- backend-network
     depends_on:
       - backend
       - frontend
@@ -84,19 +87,24 @@ services:
     ports:
       - 3100:3100
     networks:
-      - frontend-network
+      #- frontend-network
+      - temp-monit
     volumes:
       - ./monitoring/loki-config.yml:/etc/loki/loki-config.yaml
   promtail:
     image: grafana/promtail:latest
     networks:
-      - frontend-network
-      - backend-network
+      #- frontend-network
+      #- backend-network
+      - temp-monit
     volumes:
       - ./monitoring/promtail-config.yml:/etc/promtail/promtail-config.yaml
     depends_on:
       - loki
 
+networks:
+  temp-monit:
+    external: true
 volumes:
   grafana:
 

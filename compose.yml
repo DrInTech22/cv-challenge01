@@ -1,5 +1,5 @@
-include:
-  - compose.monitoring.yml
+#include:
+#  - compose.monitoring.yml
 services:
   frontend:
     build:
@@ -15,7 +15,7 @@ services:
       - traefik.http.routers.frontend.rule=(Host(`cv01.drintech.online`) || Host(`www.cv01.drintech.online`))
       - traefik.http.routers.frontend.entrypoints=websecure
       - traefik.http.routers.frontend.tls.certresolver=letsencryptresolver
-      - traefik.http.routers.frontend.middlewares=www-to-non-www-frontend
+        g- traefik.http.routers.frontend.middlewares=www-to-non-www-frontend
     networks:
       - frontend-network
 
@@ -58,7 +58,7 @@ services:
       - traefik.http.routers.adminer.rule=Host(`db.cv01.drintech.online`) || Host(`www.db.cv01.drintech.online`)
       - traefik.http.routers.adminer.entrypoints=websecure
       - traefik.http.routers.adminer.tls.certresolver=letsencryptresolver
-      - traefik.http.routers.adminer.middlewares=www-to-non-www-adminer
+        #- traefik.http.routers.adminer.middlewares=www-to-non-www-adminer
     networks:
       - backend-network
 
@@ -76,6 +76,8 @@ services:
       - --certificatesresolvers.letsencryptresolver.acme.email=drintech222@gmail.com
       - --certificatesresolvers.letsencryptresolver.acme.storage=/acme.json
       - --certificatesresolvers.letsencryptresolver.acme.tlschallenge=true
+      - --accesslog=true
+      - --log.level=ERROR
     ports:
       - 80:80
       - 443:443
@@ -90,30 +92,35 @@ services:
       - traefik.http.routers.traefik.rule=Host(`traefik.cv01.drintech.online`) || Host(`www.traefik.cv01.drintech.online`)
       - traefik.http.routers.traefik.service=api@internal
       - traefik.http.routers.traefik.tls.certresolver=letsencryptresolver
-      - traefik.http.routers.traefik.middlewares=www-to-non-www-traefik
+        # - traefik.http.routers.traefik.middlewares=www-to-non-www-traefik
+      - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
 
-      # Middleware for frontend redirection
-      - traefik.http.middlewares.www-to-non-www-frontend.redirectregex.regex=^https?://www\.cv01\.(.*)
-      - traefik.http.middlewares.www-to-non-www-frontend.redirectregex.replacement=https://cv01.$1
-      - traefik.http.middlewares.www-to-non-www-frontend.redirectregex.permanent=true
-
-      # Middleware for Adminer redirection
-      - traefik.http.middlewares.www-to-non-www-adminer.redirectregex.regex=^https?://www\.db.cv01\.(.*)
-      - traefik.http.middlewares.www-to-non-www-adminer.redirectregex.replacement=https://db.cv01.$1
-      - traefik.http.middlewares.www-to-non-www-adminer.redirectregex.permanent=true
-
-      # Middleware for Traefik redirection
-      - traefik.http.middlewares.www-to-non-www-traefik.redirectregex.regex=^https?://www\.traefik\.(.*)
-      - traefik.http.middlewares.www-to-non-www-traefik.redirectregex.replacement=https://traefik.$1
-      - traefik.http.middlewares.www-to-non-www-traefik.redirectregex.permanent=true
+#        #iddleware for frontend redirection
+#      - traefik.http.middlewares.www-to-non-www-frontend.redirectregex.regex=^https?://www\.cv01\.(.*)
+#      - traefik.http.middlewares.www-to-non-www-frontend.redirectregex.replacement=https://cv01.$1
+#      - traefik.http.middlewares.www-to-non-www-frontend.redirectregex.permanent=true
+#
+#      # Middleware for Adminer redirection
+#      - traefik.http.middlewares.www-to-non-www-adminer.redirectregex.regex=^https?://www\.db.cv01\.(.*)
+#      - traefik.http.middlewares.www-to-non-www-adminer.redirectregex.replacement=https://db.cv01.$1
+#      - traefik.http.middlewares.www-to-non-www-adminer.redirectregex.permanent=true
+#
+#      # Middleware for Traefik redirection
+#      - traefik.http.middlewares.www-to-non-www-traefik.redirectregex.regex=^https?://www\.traefik\.(.*)
+#      - traefik.http.middlewares.www-to-non-www-traefik.redirectregex.replacement=https://traefik.$1
+#      - traefik.http.middlewares.www-to-non-www-traefik.redirectregex.permanent=true
     env_file:
       - traefik/.env
     networks:
       - backend-network
       - frontend-network
+      - temp-monit
 
 networks:
   frontend-network:
   backend-network:
+  temp-monit:
+    external: true
 volumes:
   postgres_data:
