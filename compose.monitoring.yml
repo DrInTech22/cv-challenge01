@@ -11,6 +11,14 @@ services:
       - frontend-network
     depends_on:
       - cadvisor
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.prometheus.rule=(Host(`cv01.drintech.online`) && PathPrefix(`/prometheus`))
+      - traefik.http.routers.prometheus.entrypoints=websecure
+      - traefik.http.routers.prometheus.tls.certresolver=letsencryptresolver
+      - traefik.http.middlewares.prometheus-stripprefix.stripprefix.prefixes=/prometheus
+      - traefik.http.routers.prometheus.middlewares=prometheus-stripprefix
+
   grafana:
     image: grafana/grafana:latest
     ports:
@@ -21,8 +29,14 @@ services:
       - frontend-network
     depends_on:
       - loki
-     
-
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.grafana.rule=(Host(`cv01.drintech.online`) && PathPrefix(`/grafana`)) 
+      - traefik.http.routers.grafana.entrypoints=websecure
+      - traefik.http.routers.grafana.tls.certresolver=letsencryptresolver
+      - traefik.http.middlewares.grafana-stripprefix.stripprefix.prefixes=/grafana
+      - traefik.http.routers.grafana.middlewares=grafana-stripprefix
+  
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.47.0
     ports:
