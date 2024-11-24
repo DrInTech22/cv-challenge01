@@ -32,7 +32,7 @@ The project uses two compose files
 
 The `include` directive allows for modular management of monitoring services without cluttering the main Compose file.
 
-**Monitoring config files**: The monitoring folder include for some monitoring services:
+**Monitoring config files**: The monitoring folder include the following config for monitoring services:
 - loki-config.yml: 
 - prometheus.yml
 - promtail-config.yml
