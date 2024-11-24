@@ -53,7 +53,7 @@ services:
     volumes:
       - data:/data
       - letsencrypt:/etc/letsencrypt
-      #- ./nginx/nginx.prod.conf:/data/nginx/custom/http_top.conf
+      #- ./nginx/nginx.conf:/data/nginx/custom/http_top.conf
       - ./nginx/nginx.test.conf:/data/nginx/custom/http_top.conf
     restart: always
     depends_on:
