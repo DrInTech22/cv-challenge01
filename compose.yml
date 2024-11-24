@@ -27,9 +27,9 @@ services:
   db:
     image: postgres:13
     environment:
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
-      - POSTGRES_USER=${POSTGRES_USER?Variable not set}
-      - POSTGRES_DB=${POSTGRES_DB?Variable not set}
+      - POSTGRES_PASSWORD=changethis123
+      - POSTGRES_USER=app
+      - POSTGRES_DB=app
     env_file:
       - backend/.env
     networks:
