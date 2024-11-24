@@ -16,6 +16,8 @@ As part of this challenge, your primary goal is to:
 
 ---
 ## Project Implementation
+<img src=".assets/Screenshot (493).png" width="45%"></img> <img src=".assets/Screenshot (478).png" width="45%"></img> 
+
 ### Project Details
 The project is structured into 4 directories:
 - **frontend**: Contains the ReactJS application.
@@ -74,7 +76,7 @@ The `include` directive allows for modular management of monitoring services wit
   ```
   docker compose down
   ```
-## Final setup
+## Secure deployment setup
 - uncomment `#- ./nginx/nginx.conf:/data/nginx/custom/http_top.conf` in the `compose.yml` file. This maps nginx.conf file on NPM.
     ```
     volumes:
@@ -103,7 +105,37 @@ The `include` directive allows for modular management of monitoring services wit
   - https://www.cv1.drintech.online
   - http://www.db.cv1.drintech.online
 
+<img src=".assets/Screenshot (498).png" width="45%"></img> <img src=".assets/Screenshot (491).png" width="45%"></img> 
+<img src=".assets/Screenshot (494).png" width="45%"></img> <img src=".assets/Screenshot (493).png" width="45%"></img> 
 
+## Monitoring Setup
+- After all applications are successfully accessible through the custom domain, configure grafana for visualizations of metric and logs.
+- Login to grafana using the default credentials.
+    ```
+    password: admin
+    username: admin
+    ```
+- Set prometheus as a data source with the URL `http://prometheus:9090/prometheus`
+- Set loki as a data source with the URL `http://loki:3100`
+- Import container metrics dashboard using this ID `19792`
+- create a new dashboard. Go to settings, set the title and set the following variables.
+    - name: `container` display name: `container` type: `Query` label value: `container_name`
+    - name: `container_search` display name: `search` type: `textbox` 
+    - name: `severity` display name: `severity` type: `custom` custom values: `info, warn, error`
+    - name: `varlog_search` display name: `NodeLog filter` type: `textbox` 
+- create new visualization for container logs with the following query:
+    ```
+    {container_name="$container"} |~ `$container_search` | logfmt level | (level =~ `$severity` or level= "")
+    ```
+- create a new visualization for Node logs with the following query:
+    ```
+    {job="varlogs"} |~ `$varlog_search`
+    ```
+
+With this setup, you'll be able to search the container logs and also filter based on severity of the logs (info,warning or error). The same functionality apply to the Node logs, you can search through the logs using any preferred keyword.
+ 
+<img src=".assets/Screenshot (494).png" width="45%"></img> <img src=".assets/Screenshot (495).png" width="45%"></img> 
+<img src=".assets/Screenshot (496).png" width="45%"></img> <img src=".assets/Screenshot (497).png" width="45%"></img> 
 
 
 
