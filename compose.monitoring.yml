@@ -5,7 +5,7 @@ services:
       - "9090:9090"
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
-      # - '--web.external-url=/prometheus'
+      - '--web.external-url=/prometheus'
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
@@ -19,9 +19,9 @@ services:
       - "3000"
     ports:
       - "3000:3000"
-    # environment:
-    #   - GF_SERVER_ROOT_URL=http://localhost:3000/grafana
-    #   - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    environment:
+      - GF_SERVER_ROOT_URL=http://localhost:3000/grafana
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
     volumes:
       - grafana:/var/lib/grafana
     networks:
@@ -45,7 +45,6 @@ services:
       - backend
       - frontend
       - adminer
-      - traefik
       - db
 
   loki:
