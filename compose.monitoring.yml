@@ -5,63 +5,29 @@ services:
       - "9090:9090"
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
+      # - '--web.external-url=/prometheus'
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
-      - temp-monit
-      #- frontend-network
+      - frontend-network
     depends_on:
       - cadvisor
-    labels:
-      - traefik.enable=true
-      
-      # HTTP Service
-      - traefik.http.services.prometheus.loadbalancer.server.port=9090
-      
-      # HTTP Router (HTTP to HTTPS redirect)
-      - traefik.http.routers.prometheus-http.rule=(Host(`cv01.drintech.online`) && PathPrefix(`/prometheus`))
-      - traefik.http.routers.prometheus-http.entrypoints=web
-      - traefik.http.routers.prometheus-http.middlewares=https-redirect
-
-      # HTTPS Router
-      - traefik.http.routers.prometheus.rule=(Host(`cv01.drintech.online`) && PathPrefix(`/prometheus`))
-      - traefik.http.routers.prometheus.entrypoints=websecure
-      - traefik.http.routers.prometheus.tls.certresolver=letsencryptresolver
-      
-      # Middleware for path stripping
-      #- traefik.http.middlewares.prometheus-stripprefix.stripprefix.prefixes=/prometheus
-      #- traefik.http.routers.prometheus.middlewares=prometheus-stripprefix
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana-oss
+    expose:
+      - "3000"
     ports:
       - "3000:3000"
+    # environment:
+    #   - GF_SERVER_ROOT_URL=http://localhost:3000/grafana
+    #   - GF_SERVER_SERVE_FROM_SUB_PATH=true
     volumes:
       - grafana:/var/lib/grafana
     networks:
-      #- frontend-network
-      - temp-monit
+      - frontend-network
     depends_on:
       - loki
-    labels:
-      - traefik.enable=true
-      
-      # HTTP Service
-      - traefik.http.services.grafana.loadbalancer.server.port=3000
-      
-      # HTTP Router (HTTP to HTTPS redirect)
-      - traefik.http.routers.grafana-http.rule=(Host(`cv01.drintech.online`) && PathPrefix(`/grafana`))
-      - traefik.http.routers.grafana-http.entrypoints=web
-      - traefik.http.routers.grafana-http.middlewares=https-redirect
-
-      # HTTPS Router
-      - traefik.http.routers.grafana.rule=(Host(`cv01.drintech.online`) && PathPrefix(`/grafana`))
-      - traefik.http.routers.grafana.entrypoints=websecure
-      - traefik.http.routers.grafana.tls.certresolver=letsencryptresolver
-      
-      # Middleware for path stripping
-      #- traefik.http.middlewares.grafana-stripprefix.stripprefix.prefixes=/grafana
-      #- traefik.http.routers.grafana.middlewares=grafana-stripprefix
       
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.47.0
@@ -73,116 +39,33 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
     networks:
-      - temp-monit
-      #- frontend-network
-        #- backend-network
+      - frontend-network
+      - backend-network
     depends_on:
       - backend
       - frontend
       - adminer
       - traefik
       - db
+
   loki:
     image: grafana/loki:latest
     ports:
       - 3100:3100
     networks:
-      #- frontend-network
-      - temp-monit
+      - frontend-network
     volumes:
       - ./monitoring/loki-config.yml:/etc/loki/loki-config.yaml
+
   promtail:
     image: grafana/promtail:latest
     networks:
-      #- frontend-network
-      #- backend-network
-      - temp-monit
+      - frontend-network
+      - backend-network
     volumes:
       - ./monitoring/promtail-config.yml:/etc/promtail/promtail-config.yaml
     depends_on:
       - loki
 
-networks:
-  temp-monit:
-    external: true
 volumes:
   grafana:
-
-
-# services:
-#   prometheus:
-#     image: prom/prometheus
-#     ports:
-#       - "9090:9090"
-#     command:
-#       - '--config.file=/etc/prometheus/prometheus.yml'
-#     volumes:
-#       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-#     networks:
-#       - frontend-network
-#     depends_on:
-#       - cadvisor
-#     labels:
-#       - traefik.enable=true
-#       - traefik.http.routers.prometheus.rule=(Host(`cv01.drintech.online`) && PathPrefix(`/prometheus`))
-#       - traefik.http.routers.prometheus.entrypoints=websecure
-#       - traefik.http.routers.prometheus.tls.certresolver=letsencryptresolver
-#       - traefik.http.middlewares.prometheus-stripprefix.stripprefix.prefixes=/prometheus
-#       - traefik.http.routers.prometheus.middlewares=prometheus-stripprefix
-
-#   grafana:
-#     image: grafana/grafana:latest
-#     ports:
-#       - "3000:3000"
-#     volumes:
-#       - grafana:/var/lib/grafana
-#     networks:
-#       - frontend-network
-#     depends_on:
-#       - loki
-#     labels:
-#       - traefik.enable=true
-#       - traefik.http.routers.grafana.rule=(Host(`cv01.drintech.online`) && PathPrefix(`/grafana`)) 
-#       - traefik.http.routers.grafana.entrypoints=websecure
-#       - traefik.http.routers.grafana.tls.certresolver=letsencryptresolver
-#       - traefik.http.middlewares.grafana-stripprefix.stripprefix.prefixes=/grafana
-#       - traefik.http.routers.grafana.middlewares=grafana-stripprefix
-  
-#   cadvisor:
-#     image: gcr.io/cadvisor/cadvisor:v0.47.0
-#     ports:
-#       - "8081:8080"
-#     volumes:
-#       - /:/rootfs:ro
-#       - /var/run:/var/run:rw
-#       - /sys:/sys:ro
-#       - /var/lib/docker/:/var/lib/docker:ro
-#     networks:
-#       - frontend-network
-#       - backend-network
-#     depends_on:
-#       - backend
-#       - frontend
-#       - adminer
-#       - traefik
-#       - db
-#   loki:
-#     image: grafana/loki:latest
-#     ports:
-#       - 3100:3100
-#     networks:
-#       - frontend-network
-#     volumes:
-#       - ./monitoring/loki-config.yml:/etc/loki/loki-config.yaml
-#   promtail:
-#     image: grafana/promtail:latest
-#     networks:
-#       - frontend-network
-#       - backend-network
-#     volumes:
-#       - ./monitoring/promtail-config.yml:/etc/promtail/promtail-config.yaml
-#     depends_on:
-#       - loki
-
-# volumes:
-#   grafana:

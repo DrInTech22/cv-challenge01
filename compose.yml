@@ -1,5 +1,5 @@
-#include:
-#  - compose.monitoring.yml
+include:
+  - compose.monitoring.yml
 services:
   frontend:
     build:
@@ -8,14 +8,8 @@ services:
       - frontend/.env
     depends_on:
       - backend
-    # ports:
-    #   - "5173:5173"
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.frontend.rule=(Host(`cv01.drintech.online`) || Host(`www.cv01.drintech.online`))
-      - traefik.http.routers.frontend.entrypoints=websecure
-      - traefik.http.routers.frontend.tls.certresolver=letsencryptresolver
-        g- traefik.http.routers.frontend.middlewares=www-to-non-www-frontend
+    ports:
+      - "5173:5173"
     networks:
       - frontend-network
 
@@ -24,103 +18,67 @@ services:
       context: ./backend
     env_file:
       - backend/.env
-    # ports:
-    #   - "8000:8000"
     networks:
       - frontend-network
       - backend-network
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.backend.rule=(Host(`cv01.drintech.online`) && (PathPrefix(`/api`) || PathPrefix(`/redoc`) || PathPrefix(`/docs`)))
-      - traefik.http.routers.backend.entrypoints=websecure
-      - traefik.http.routers.backend.tls.certresolver=letsencryptresolver
     depends_on:
       - db
 
   db:
     image: postgres:13
     environment:
-      POSTGRES_DB: app
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: changethis123
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
+      - POSTGRES_USER=${POSTGRES_USER?Variable not set}
+      - POSTGRES_DB=${POSTGRES_DB?Variable not set}
+    env_file:
+      - backend/.env
     networks:
       - backend-network
 
   adminer:
     image: adminer
     restart: always
-    # ports:
-    #   - "8090:8080"
     environment:
       ADMINER_DEFAULT_SERVER: db
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.adminer.rule=Host(`db.cv01.drintech.online`) || Host(`www.db.cv01.drintech.online`)
-      - traefik.http.routers.adminer.entrypoints=websecure
-      - traefik.http.routers.adminer.tls.certresolver=letsencryptresolver
-        #- traefik.http.routers.adminer.middlewares=www-to-non-www-adminer
     networks:
       - backend-network
-
-  traefik:
-    image: traefik:v2.10.1
-    restart: unless-stopped
-    command:
-      - --entrypoints.web.address=:80
-      - --entrypoints.web.http.redirections.entryPoint.to=websecure
-      - --entrypoints.web.http.redirections.entryPoint.scheme=https
-      - --entrypoints.websecure.address=:443
-      - --providers.docker=true
-      - --providers.docker.exposedByDefault=false
-      - --api
-      - --certificatesresolvers.letsencryptresolver.acme.email=drintech222@gmail.com
-      - --certificatesresolvers.letsencryptresolver.acme.storage=/acme.json
-      - --certificatesresolvers.letsencryptresolver.acme.tlschallenge=true
-      - --accesslog=true
-      - --log.level=ERROR
+  nginx:
+    image: 'jc21/nginx-proxy-manager:2.10.4'
     ports:
-      - 80:80
-      - 443:443
-      - 8080:8080
+      - '80:80'
+      - '443:443'
+      - '8090:81'
+    environment:
+      DB_SQLITE_FILE: "/data/database.sqlite"
     volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /mnt/media/traefik/acme.json:/acme.json
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.traefik.entrypoints=websecure
-      - traefik.http.routers.traefik.rule=Host(`traefik.cv01.drintech.online`) || Host(`www.traefik.cv01.drintech.online`)
-      - traefik.http.routers.traefik.service=api@internal
-      - traefik.http.routers.traefik.tls.certresolver=letsencryptresolver
-        # - traefik.http.routers.traefik.middlewares=www-to-non-www-traefik
-      - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
-
-#        #iddleware for frontend redirection
-#      - traefik.http.middlewares.www-to-non-www-frontend.redirectregex.regex=^https?://www\.cv01\.(.*)
-#      - traefik.http.middlewares.www-to-non-www-frontend.redirectregex.replacement=https://cv01.$1
-#      - traefik.http.middlewares.www-to-non-www-frontend.redirectregex.permanent=true
-#
-#      # Middleware for Adminer redirection
-#      - traefik.http.middlewares.www-to-non-www-adminer.redirectregex.regex=^https?://www\.db.cv01\.(.*)
-#      - traefik.http.middlewares.www-to-non-www-adminer.redirectregex.replacement=https://db.cv01.$1
-#      - traefik.http.middlewares.www-to-non-www-adminer.redirectregex.permanent=true
-#
-#      # Middleware for Traefik redirection
-#      - traefik.http.middlewares.www-to-non-www-traefik.redirectregex.regex=^https?://www\.traefik\.(.*)
-#      - traefik.http.middlewares.www-to-non-www-traefik.redirectregex.replacement=https://traefik.$1
-#      - traefik.http.middlewares.www-to-non-www-traefik.redirectregex.permanent=true
-    env_file:
-      - traefik/.env
+      - data:/data
+      - letsencrypt:/etc/letsencrypt
+      #- ./nginx/nginx.prod.conf:/data/nginx/custom/http_top.conf
+      - ./nginx/nginx.test.conf:/data/nginx/custom/http_top.conf
+    restart: always
+    depends_on:
+      - frontend
+      - backend
+      - db
+      - adminer
     networks:
-      - backend-network
       - frontend-network
-      - temp-monit
+      - backend-network
 
 networks:
   frontend-network:
   backend-network:
-  temp-monit:
-    external: true
 volumes:
   postgres_data:
+  data:
+  letsencrypt:
+
+
+
+
+
+
+
+
+
+
