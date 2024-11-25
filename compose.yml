@@ -8,8 +8,8 @@ services:
       - frontend/.env
     depends_on:
       - backend
-    ports:
-      - "5173:5173"
+    expose:
+      - "5173"
     networks:
       - frontend-network
 
@@ -18,22 +18,32 @@ services:
       context: ./backend
     env_file:
       - backend/.env
+    expose:
+      - "8000"
     networks:
       - frontend-network
       - backend-network
     depends_on:
       - db
+    secrets:
+      - postgres_password
 
   db:
     image: postgres:13
     environment:
-      - POSTGRES_PASSWORD=changethis123
-      - POSTGRES_USER=app
-      - POSTGRES_DB=app
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_USER: app
+      POSTGRES_DB: app
+    secrets:
+      - postgres_password
     env_file:
       - backend/.env
     networks:
       - backend-network
+    expose:
+      - "5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   adminer:
     image: adminer
@@ -42,6 +52,8 @@ services:
       ADMINER_DEFAULT_SERVER: db
     networks:
       - backend-network
+    expose:
+      - "8080"
   nginx:
     image: 'jc21/nginx-proxy-manager:2.10.4'
     ports:
@@ -72,6 +84,10 @@ volumes:
   postgres_data:
   data:
   letsencrypt:
+
+secrets:
+   postgres_password:
+     file: ./POSTGRES_PASSWORD.txt
 
 
 

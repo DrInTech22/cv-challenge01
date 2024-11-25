@@ -118,7 +118,7 @@ The `include` directive allows for modular management of monitoring services wit
     - name: `container` display name: `container` variable type: `Query` label value: `container_name`
     - name: `container_search` display name: `search` variable type: `textbox` 
     - name: `severity` display name: `severity` variable type: `custom` custom values: `info, warn, error`
-    - name: `NodeLogs` display name: `NodeLogs` variable type: `Query` labelvalue: `filename`
+    - name: `NodeLogs` display name: `NodeLogs` variable type: `Query` label value: `filename`
     - name: `varlog_search` display name: `NodeLog filter` variable type: `textbox` 
     - 
 - create new visualization for container logs with the following query:
