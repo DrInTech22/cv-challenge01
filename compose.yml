@@ -58,8 +58,9 @@ services:
     depends_on:
       - frontend
       - backend
-      - db
       - adminer
+      - prometheus
+      - grafana
     networks:
       - frontend-network
       - backend-network

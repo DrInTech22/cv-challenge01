@@ -63,6 +63,7 @@ services:
       - backend-network
     volumes:
       - ./monitoring/promtail-config.yml:/etc/promtail/promtail-config.yaml
+      - /var/log:/var/log
     depends_on:
       - loki
 

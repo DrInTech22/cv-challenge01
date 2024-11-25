@@ -37,8 +37,8 @@ The `include` directive allows for modular management of monitoring services wit
 - prometheus.yml
 - promtail-config.yml
 
-## How to Setup
-- The following domains should point to the server.
+## Setup
+- The following domains point to the server.
     - `cv1.drintech.online`
     - `www.cv1.drintech.online`
     - `db.cv1.drintech.online`
@@ -72,10 +72,6 @@ The `include` directive allows for modular management of monitoring services wit
   - **nginx.cv1.drintech.online**
 - Take note of the ssl cert path for each domain and modify the nginx.conf file accordingly.
 
-- stop the applications
-  ```
-  docker compose down
-  ```
 ## Secure deployment setup
 - uncomment `#- ./nginx/nginx.conf:/data/nginx/custom/http_top.conf` in the `compose.yml` file. This maps nginx.conf file on NPM.
     ```
@@ -109,7 +105,7 @@ The `include` directive allows for modular management of monitoring services wit
 <img src=".assets/Screenshot (494).png" width="45%"></img> <img src=".assets/Screenshot (493).png" width="45%"></img> 
 
 ## Monitoring Setup
-- After all applications are successfully accessible through the custom domain, configure grafana for visualizations of metric and logs.
+- After all applications are successfully accessible through the custom domain, grafana is then configured for visualizations of metric and logs.
 - Login to grafana using the default credentials.
     ```
     password: admin
@@ -117,12 +113,14 @@ The `include` directive allows for modular management of monitoring services wit
     ```
 - Set prometheus as a data source with the URL `http://prometheus:9090/prometheus`
 - Set loki as a data source with the URL `http://loki:3100`
-- Import container metrics dashboard using this ID `19792`
+- Import container metrics dashboard using ID `19792`
 - create a new dashboard. Go to settings, set the title and set the following variables.
-    - name: `container` display name: `container` type: `Query` label value: `container_name`
-    - name: `container_search` display name: `search` type: `textbox` 
-    - name: `severity` display name: `severity` type: `custom` custom values: `info, warn, error`
-    - name: `varlog_search` display name: `NodeLog filter` type: `textbox` 
+    - name: `container` display name: `container` variable type: `Query` label value: `container_name`
+    - name: `container_search` display name: `search` variable type: `textbox` 
+    - name: `severity` display name: `severity` variable type: `custom` custom values: `info, warn, error`
+    - name: `NodeLogs` display name: `NodeLogs` variable type: `Query` labelvalue: `filename`
+    - name: `varlog_search` display name: `NodeLog filter` variable type: `textbox` 
+    - 
 - create new visualization for container logs with the following query:
     ```
     {container_name="$container"} |~ `$container_search` | logfmt level | (level =~ `$severity` or level= "")
@@ -135,7 +133,7 @@ The `include` directive allows for modular management of monitoring services wit
 With this setup, you'll be able to search the container logs and also filter based on severity of the logs (info,warning or error). The same functionality apply to the Node logs, you can search through the logs using any preferred keyword.
  
 <img src=".assets/Screenshot (494).png" width="45%"></img> <img src=".assets/Screenshot (495).png" width="45%"></img> 
-<img src=".assets/Screenshot (496).png" width="45%"></img> <img src=".assets/Screenshot (497).png" width="45%"></img> 
+<img src=".assets/Screenshot (499).png" width="45%"></img> <img src=".assets/Screenshot (500).png" width="45%"></img> 
 
 
 
