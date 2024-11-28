@@ -34,8 +34,6 @@ services:
       POSTGRES_DB: app
     secrets:
       - postgres_password
-    env_file:
-      - backend/.env
     networks:
       - backend-network
     expose:
