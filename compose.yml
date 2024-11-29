@@ -21,9 +21,9 @@ services:
       # Middleware definitions
       - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
       - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
-      - "traefik.http.middlewares.www-to-non-www.redirectregex.regex=^https://www\\.(.+)"
-      - "traefik.http.middlewares.www-to-non-www.redirectregex.replacement=https://$1"
-      - "traefik.http.middlewares.www-to-non-www.redirectregex.permanent=true"
+      # - "traefik.http.middlewares.www-to-non-www.redirectregex.regex=^https://www\\.(.+)"
+      # - "traefik.http.middlewares.www-to-non-www.redirectregex.replacement=https://$1"
+      # - "traefik.http.middlewares.www-to-non-www.redirectregex.permanent=true"
       # HTTPS Router
       - "traefik.http.routers.frontend-https.rule=(Host(`cv01.drintech.online`) || Host(`www.cv01.drintech.online`))"
       - "traefik.http.routers.frontend-https.entrypoints=websecure"
@@ -122,7 +122,11 @@ services:
       - "traefik.http.routers.traefik-http.entrypoints=web"
       - "traefik.http.services.traefik-http.loadbalancer.server.port=8080"
       # HTTP to HTTPS redirect
-      - "traefik.http.routers.traefik-http.middlewares=https-redirect"
+      - "traefik.http.routers.traefik-http.middlewares=https-redirect,www-to-non-www"
+      - "traefik.http.middlewares.www-to-non-www.redirectregex.regex=^https://www\\.(.+)"
+      - "traefik.http.middlewares.www-to-non-www.redirectregex.replacement=https://$1"
+      - "traefik.http.middlewares.www-to-non-www.redirectregex.permanent=true"
+      # HTTPS Router
       # HTTPS Router
       - "traefik.http.routers.traefik.rule=Host(`traefik.cv01.drintech.online`) || Host(`www.traefik.cv01.drintech.online`)"
       - "traefik.http.routers.traefik.entrypoints=websecure"

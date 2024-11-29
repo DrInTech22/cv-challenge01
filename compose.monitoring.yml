@@ -21,16 +21,11 @@ services:
       # HTTP Router ()
       - traefik.http.routers.prometheus-http.rule=((Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`)) && PathPrefix(`/prometheus`))
       - traefik.http.routers.prometheus-http.entrypoints=web
-      # HTTP to HTTPS redirect and www to non-www redirect
-      - traefik.http.routers.prometheus-http.middlewares=https-redirect,www-to-non-www
-      
-      # Middleware definitions
-      - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
-      - traefik.http.middlewares.www-to-non-www.redirectregex.regex=^https://www\\.(.+)/prometheus
-      - traefik.http.middlewares.www-to-non-www.redirectregex.replacement=https://$1/prometheus
-      - traefik.http.middlewares.www-to-non-www.redirectregex.permanent=true
-      
+      # HTTP to HTTPS redirect
+      - traefik.http.routers.prometheus-http.middlewares=https-redirect
+      - traefik.http.routers.prometheus-http.middlewares=www-to-non-www
+      - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
+      - traefik.http.middlewares.https-redirect.redirectScheme.permanent=true
       # HTTPS Router
       - traefik.http.routers.prometheus-https.rule=(Host(`cv01.drintech.online`) && PathPrefix(`/prometheus`))
       - traefik.http.routers.prometheus-https.entrypoints=websecure
