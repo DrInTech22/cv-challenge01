@@ -3,8 +3,6 @@ services:
     image: prom/prometheus
     ports:
       - "9090:9090"
-    expose:
-      - "9090"
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--web.external-url=/prometheus'
@@ -14,20 +12,6 @@ services:
       - frontend-network
     depends_on:
       - cadvisor
-    labels:
-      - traefik.enable=true
-      # HTTP Service
-      - traefik.http.services.prometheus.loadbalancer.server.port=9090 # important
-      # HTTP Router ()
-      - traefik.http.routers.prometheus-http.rule=((Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`)) && PathPrefix(`/prometheus`))
-      - traefik.http.routers.prometheus-http.entrypoints=web
-      # wwww to non-www redirect
-      - traefik.http.routers.prometheus-https.middlewares=www-to-non-www
-      # HTTPS Router
-      - traefik.http.routers.prometheus-https.rule=((Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`)) && PathPrefix(`/prometheus`))
-      - traefik.http.routers.prometheus-https.entrypoints=websecure
-      - traefik.http.routers.prometheus-https.tls.certresolver=letsencryptresolver
-      - traefik.http.routers.prometheus-https.service=prometheus # optional
 
   grafana:
     image: grafana/grafana-oss
@@ -35,20 +19,6 @@ services:
       - "3000"
     ports:
       - "3000:3000"
-    labels:
-      - traefik.enable=true
-      # HTTP Service
-      - traefik.http.services.grafana.loadbalancer.server.port=3000 # important
-      # HTTP Router 
-      - traefik.http.routers.grafana-http.rule=((Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`)) && PathPrefix(`/grafana`))
-      - traefik.http.routers.grafana-http.entrypoints=web
-      # HTTP to HTTPS redirect
-      - traefik.http.routers.grafana-https.middlewares=www-to-non-www
-      # HTTPS Router
-      - traefik.http.routers.grafana-https.rule=((Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`)) && PathPrefix(`/grafana`))
-      - traefik.http.routers.grafana-https.entrypoints=websecure
-      - traefik.http.routers.grafana-https.tls.certresolver=letsencryptresolver
-      - traefik.http.routers.grafana-https.service=grafana # optional
     environment:
       - GF_SERVER_ROOT_URL=http://localhost:3000/grafana
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
@@ -75,7 +45,6 @@ services:
       - backend
       - frontend
       - adminer
-      - traefik
       - db
 
   loki:
@@ -94,6 +63,7 @@ services:
       - backend-network
     volumes:
       - ./monitoring/promtail-config.yml:/etc/promtail/promtail-config.yaml
+      - /var/log:/var/log
     depends_on:
       - loki
 

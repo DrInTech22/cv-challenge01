@@ -1,0 +1,132 @@
+include:
+  - compose.monitoring.yml
+services:
+  frontend:
+    build:
+      context: ./frontend
+    env_file:
+      - frontend/.env
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+    labels:
+      - "traefik.enable=true"
+      # HTTP Router
+      - "traefik.http.routers.frontend-http.rule=(Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`))"
+      - "traefik.http.routers.frontend-http.entrypoints=web"
+      - "traefik.http.services.frontend.loadbalancer.server.port=5173"
+      # www to non-www redirect
+      - "traefik.http.routers.frontend-https.middlewares=www-to-non-www"
+      # HTTPS Router
+      - "traefik.http.routers.frontend-https.rule=(Host(`cv01.drintech.online`) || Host(`www.cv01.drintech.online`))"
+      - "traefik.http.routers.frontend-https.entrypoints=websecure"
+      - "traefik.http.routers.frontend-https.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.frontend-https.service=frontend" # optional
+
+    networks:
+      - frontend-network
+
+  backend:
+    build:
+      context: ./backend
+    env_file:
+      - backend/.env
+    networks:
+      - frontend-network
+      - backend-network
+    labels:
+      - traefik.enable=true
+      # HTTP Router
+      - traefik.http.routers.backend-http.rule=((Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`)) && (PathPrefix(`/api`) || PathPrefix(`/redoc`) || PathPrefix(`/docs`)))
+      - traefik.http.routers.backend-http.entrypoints=web
+      - traefik.http.services.backend-http.loadbalancer.server.port=8000
+      # www to non-www redirect
+      - "traefik.http.routers.backend-https.middlewares=www-to-non-www"
+      # HTTPS Router
+      - traefik.http.routers.backend-https.rule=(Host(`cv01.drintech.online`) && (PathPrefix(`/api`) || PathPrefix(`/redoc`) || PathPrefix(`/docs`)))
+      - traefik.http.routers.backend-https.entrypoints=websecure
+      - traefik.http.routers.backend-https.tls.certresolver=letsencryptresolver
+      
+    depends_on:
+      - db
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: changethis123
+    networks:
+      - backend-network
+
+  adminer:
+    image: adminer
+    restart: always
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    labels:
+      - traefik.enable=true
+      # HTTP Router
+      - traefik.http.routers.adminer-http.rule=Host(`db.cv01.drintech.online`) || Host(`www.db.cv01.drintech.online`)
+      - traefik.http.routers.adminer-http.entrypoints=web
+      - traefik.http.services.adminer.loadbalancer.server.port=8080
+      # www to non-www redirect
+      - "traefik.http.routers.adminer-https.middlewares=www-to-non-www"
+      # HTTPS Router
+      - traefik.http.routers.adminer-https.rule=Host(`db.cv01.drintech.online`) || Host(`www.db.cv01.drintech.online`)
+      - traefik.http.routers.adminer-https.entrypoints=websecure
+      - traefik.http.routers.adminer-https.tls.certresolver=letsencryptresolver
+    networks:
+      - backend-network
+
+  traefik:
+    image: traefik:v2.10.1
+    restart: unless-stopped
+    command:
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+      - "--api"
+      - "--certificatesresolvers.letsencryptresolver.acme.email=drintech222@gmail.com"
+      - "--certificatesresolvers.letsencryptresolver.acme.storage=/acme.json"
+      - "--certificatesresolvers.letsencryptresolver.acme.tlschallenge=true"
+      - "--accesslog=true"
+      - "--log.level=ERROR"
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/acme.json:/acme.json
+    labels:
+      - "traefik.enable=true"
+      # HTTP Router
+      - "traefik.http.routers.traefik-http.rule=Host(`traefik.cv01.drintech.online`) || Host(`www.traefik.cv01.drintech.online`)"
+      - "traefik.http.routers.traefik-http.entrypoints=web"
+      - "traefik.http.services.traefik-http.loadbalancer.server.port=8080"
+      # www to non-www redirect
+      - "traefik.http.routers.traefik-https.middlewares=www-to-non-www"
+      # HTTP to HTTPS redirect
+      - "traefik.http.middlewares.www-to-non-www.redirectregex.regex=^https?://www\\.(.+)"
+      - "traefik.http.middlewares.www-to-non-www.redirectregex.replacement=https://$1"
+      - "traefik.http.middlewares.www-to-non-www.redirectregex.permanent=true"
+      # HTTPS Router
+      - "traefik.http.routers.traefik-https.rule=Host(`traefik.cv01.drintech.online`) || Host(`www.traefik.cv01.drintech.online`)"
+      - "traefik.http.routers.traefik-https.entrypoints=websecure"
+      - "traefik.http.routers.traefik-https.service=api@internal"
+      - "traefik.http.routers.traefik-https.tls.certresolver=letsencryptresolver"
+    networks:
+      - backend-network
+      - frontend-network
+
+networks:
+  frontend-network:
+  backend-network:
+volumes:
+  postgres_data:
