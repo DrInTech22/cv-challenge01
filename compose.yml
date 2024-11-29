@@ -15,7 +15,7 @@ services:
       # HTTP Router
       - "traefik.http.routers.frontend-http.rule=Host(`cv01.drintech.online`)" # || Host(`www.cv01.drintech.online`))"
       - "traefik.http.routers.frontend-http.entrypoints=web"
-      - "traefik.http.services.frontend-http.loadbalancer.server.port=5173"
+      # - "traefik.http.services.frontend-http.loadbalancer.server.port=5173"
       # HTTP to HTTPS redirect
       - "traefik.http.routers.frontend-http.middlewares=https-redirect"
       - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
@@ -24,7 +24,8 @@ services:
       - "traefik.http.routers.frontend-https.rule=Host(`cv01.drintech.online`)" # || Host(`www.cv01.drintech.online`))"
       - "traefik.http.routers.frontend-https.entrypoints=websecure"
       - "traefik.http.routers.frontend-https.tls.certresolver=letsencryptresolver"
-      - traefik.http.routers.frontend-https.service=frontend
+      - "traefik.http.services.frontend-https.loadbalancer.server.port=5173"
+      - "traefik.http.routers.frontend-https.service=frontend"
       # - "traefik.http.routers.frontend.middlewares=www-to-non-www-frontend"
 
     networks:
