@@ -42,7 +42,6 @@ services:
       # HTTP Router 
       - traefik.http.routers.grafana-http.rule=((Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`)) && PathPrefix(`/grafana`))
       - traefik.http.routers.grafana-http.entrypoints=web
-      - traefik.http.routers.grafana-http.service=grafana
       # HTTP to HTTPS redirect
       - traefik.http.routers.grafana-https.middlewares=www-to-non-www
       # HTTPS Router
