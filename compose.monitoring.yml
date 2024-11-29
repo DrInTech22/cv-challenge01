@@ -21,16 +21,13 @@ services:
       # HTTP Router ()
       - traefik.http.routers.prometheus-http.rule=((Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`)) && PathPrefix(`/prometheus`))
       - traefik.http.routers.prometheus-http.entrypoints=web
-      # HTTP to HTTPS redirect
-      # - traefik.http.routers.prometheus-http.middlewares=https-redirect
-      - traefik.http.routers.prometheus-http.middlewares=www-to-non-www
-      # - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
-      # - traefik.http.middlewares.https-redirect.redirectScheme.permanent=true
+      # wwww to non-www redirect
+      - traefik.http.routers.prometheus-http.middlewares=www-to-non-wwwrue
       # HTTPS Router
       - traefik.http.routers.prometheus-https.rule=((Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`)) && PathPrefix(`/prometheus`))
       - traefik.http.routers.prometheus-https.entrypoints=websecure
       - traefik.http.routers.prometheus-https.tls.certresolver=letsencryptresolver
-      - traefik.http.routers.prometheus-https.service=prometheus # optional
+      # - traefik.http.routers.prometheus-https.service=prometheus 
 
   grafana:
     image: grafana/grafana-oss
@@ -41,7 +38,7 @@ services:
     labels:
       - traefik.enable=true
       # HTTP Service
-      - traefik.http.services.grafana.loadbalancer.server.port=3000
+      - traefik.http.services.grafana.loadbalancer.server.port=3000 # important
       # HTTP Router 
       - traefik.http.routers.grafana-http.rule=((Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`)) && PathPrefix(`/grafana`))
       - traefik.http.routers.grafana-http.entrypoints=web
@@ -49,10 +46,10 @@ services:
       # HTTP to HTTPS redirect
       - traefik.http.routers.grafana-http.middlewares=www-to-non-www
       # HTTPS Router
-      - traefik.http.routers.grafana-https.rule=(Host(`cv01.drintech.online`) && PathPrefix(`/grafana`))
+      - traefik.http.routers.grafana-https.rule=((Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`)) && PathPrefix(`/grafana`))
       - traefik.http.routers.grafana-https.entrypoints=websecure
       - traefik.http.routers.grafana-https.tls.certresolver=letsencryptresolver
-      - traefik.http.routers.grafana-https.service=grafana
+      - traefik.http.routers.grafana-https.service=grafana # optional
     environment:
       - GF_SERVER_ROOT_URL=http://localhost:3000/grafana
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
