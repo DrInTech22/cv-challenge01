@@ -22,12 +22,12 @@ services:
       - traefik.http.routers.prometheus-http.rule=((Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`)) && PathPrefix(`/prometheus`))
       - traefik.http.routers.prometheus-http.entrypoints=web
       # HTTP to HTTPS redirect
-      - traefik.http.routers.prometheus-http.middlewares=https-redirect
+      # - traefik.http.routers.prometheus-http.middlewares=https-redirect
       - traefik.http.routers.prometheus-http.middlewares=www-to-non-www
-      - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
-      - traefik.http.middlewares.https-redirect.redirectScheme.permanent=true
+      # - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
+      # - traefik.http.middlewares.https-redirect.redirectScheme.permanent=true
       # HTTPS Router
-      - traefik.http.routers.prometheus-https.rule=(Host(`cv01.drintech.online`) && PathPrefix(`/prometheus`))
+      - traefik.http.routers.prometheus-https.rule=((Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`)) && PathPrefix(`/prometheus`))
       - traefik.http.routers.prometheus-https.entrypoints=websecure
       - traefik.http.routers.prometheus-https.tls.certresolver=letsencryptresolver
       - traefik.http.routers.prometheus-https.service=prometheus # optional
@@ -47,9 +47,9 @@ services:
       - traefik.http.routers.grafana-http.entrypoints=web
       - traefik.http.routers.grafana-http.service=grafana
       # HTTP to HTTPS redirect
-      - traefik.http.routers.grafana-http.middlewares=https-redirect
-      - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
-      - traefik.http.middlewares.https-redirect.redirectScheme.permanent=true
+      - traefik.http.routers.grafana-http.middlewares=www-to-non-www
+      # - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
+      # - traefik.http.middlewares.https-redirect.redirectScheme.permanent=true
       # HTTPS Router
       - traefik.http.routers.grafana-https.rule=(Host(`cv01.drintech.online`) && PathPrefix(`/grafana`))
       - traefik.http.routers.grafana-https.entrypoints=websecure

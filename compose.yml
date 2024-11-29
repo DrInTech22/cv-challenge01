@@ -17,10 +17,10 @@ services:
       - "traefik.http.routers.frontend-http.entrypoints=web"
       - "traefik.http.services.frontend.loadbalancer.server.port=5173"
       # HTTP to HTTPS redirect and www to non-www redirect
-      - "traefik.http.routers.frontend-http.middlewares=https-redirect,www-to-non-www"
+      - "traefik.http.routers.frontend-http.middlewares=www-to-non-www"
       # Middleware definitions
-      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+      # - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      # - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
       # - "traefik.http.middlewares.www-to-non-www.redirectregex.regex=^https://www\\.(.+)"
       # - "traefik.http.middlewares.www-to-non-www.redirectregex.replacement=https://$1"
       # - "traefik.http.middlewares.www-to-non-www.redirectregex.permanent=true"
@@ -49,9 +49,9 @@ services:
       - traefik.http.routers.backend-http.entrypoints=web
       - traefik.http.services.backend-http.loadbalancer.server.port=8000
       # HTTP to HTTPS redirect
-      - traefik.http.routers.backend-http.middlewares=https-redirect
-      - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
-      - traefik.http.middlewares.https-redirect.redirectScheme.permanent=true
+      # - traefik.http.routers.backend-http.middlewares=https-redirect
+      # - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
+      # - traefik.http.middlewares.https-redirect.redirectScheme.permanent=true
       # HTTPS Router
       - traefik.http.routers.backend.rule=(Host(`cv01.drintech.online`) && (PathPrefix(`/api`) || PathPrefix(`/redoc`) || PathPrefix(`/docs`)))
       - traefik.http.routers.backend.entrypoints=websecure
@@ -82,8 +82,8 @@ services:
       - traefik.http.services.adminer.loadbalancer.server.port=8080
       # HTTP to HTTPS redirect
       - traefik.http.routers.adminer-http.middlewares=https-redirect
-      - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
-      - traefik.http.middlewares.https-redirect.redirectScheme.permanent=true
+      # - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
+      # - traefik.http.middlewares.https-redirect.redirectScheme.permanent=true
       # HTTPS Router
       - traefik.http.routers.adminer.rule=Host(`db.cv01.drintech.online`) || Host(`www.db.cv01.drintech.online`)
       - traefik.http.routers.adminer.entrypoints=websecure
@@ -96,8 +96,8 @@ services:
     restart: unless-stopped
     command:
       - "--entrypoints.web.address=:80"
-      # - --entrypoints.web.http.redirections.entryPoint.to=websecure
-      # - --entrypoints.web.http.redirections.entryPoint.scheme=https
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
       - "--entrypoints.websecure.address=:443"
       - "--providers.docker=true"
       - "--providers.docker.exposedByDefault=false"
@@ -122,7 +122,7 @@ services:
       - "traefik.http.routers.traefik-http.entrypoints=web"
       - "traefik.http.services.traefik-http.loadbalancer.server.port=8080"
       # HTTP to HTTPS redirect
-      - "traefik.http.routers.traefik-http.middlewares=https-redirect,www-to-non-www"
+      - "traefik.http.routers.traefik-http.middlewares=www-to-non-www"
       - "traefik.http.middlewares.www-to-non-www.redirectregex.regex=^https://www\\.(.+)"
       - "traefik.http.middlewares.www-to-non-www.redirectregex.replacement=https://$1"
       - "traefik.http.middlewares.www-to-non-www.redirectregex.permanent=true"
