@@ -83,7 +83,6 @@ services:
       - traefik.http.routers.adminer.rule=Host(`db.cv01.drintech.online`) || Host(`www.db.cv01.drintech.online`)
       - traefik.http.routers.adminer.entrypoints=websecure
       - traefik.http.routers.adminer.tls.certresolver=letsencryptresolver
-      - traefik.http.services.adminer.loadbalancer.server.port=8080
     networks:
       - backend-network
 
