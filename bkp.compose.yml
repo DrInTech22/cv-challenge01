@@ -114,15 +114,15 @@ services:
       - "traefik.http.routers.traefik-http.entrypoints=web"
       - "traefik.http.services.traefik-http.loadbalancer.server.port=8080"
       # HTTP to HTTPS redirect
-      - "traefik.http.routers.traefik-http.middlewares=https-redirect"
+      # - "traefik.http.routers.traefik-http.middlewares=https-redirect"
       # HTTPS Router
       - "traefik.http.routers.traefik.rule=Host(`traefik.cv01.drintech.online`) || Host(`www.traefik.cv01.drintech.online`)"
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.service=api@internal"
       - "traefik.http.routers.traefik.tls.certresolver=letsencryptresolver"
       # Middleware definitions
-      # - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
-      # - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
+      # - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      # - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
     networks:
       - backend-network
       - frontend-network
