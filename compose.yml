@@ -119,8 +119,7 @@ services:
       - "traefik.http.routers.traefik-http.entrypoints=web"
       - "traefik.http.services.traefik-http.loadbalancer.server.port=8080"
       # HTTP to HTTPS redirect
-      - "traefik.http.routers.traefik-http.middlewares=www-to-non-www"
-      - "traefik.http.middlewares.www-to-non-www.redirectregex.regex=^https://www\\.(.+)"
+      - "traefik.http.middlewares.www-to-non-www.redirectregex.regex=^https?://www\\.(.+)"
       - "traefik.http.middlewares.www-to-non-www.redirectregex.replacement=https://$1"
       - "traefik.http.middlewares.www-to-non-www.redirectregex.permanent=true"
       # HTTPS Router

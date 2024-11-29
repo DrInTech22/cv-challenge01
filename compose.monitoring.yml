@@ -22,7 +22,8 @@ services:
       - traefik.http.routers.prometheus-http.rule=((Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`)) && PathPrefix(`/prometheus`))
       - traefik.http.routers.prometheus-http.entrypoints=web
       # wwww to non-www redirect
-      - traefik.http.routers.prometheus-http.middlewares=www-to-non-wwwrue
+      - traefik.http.routers.prometheus-http.middlewares=www-to-non-www
+      - traefik.http.routers.prometheus-https.middlewares=www-to-non-www
       # HTTPS Router
       - traefik.http.routers.prometheus-https.rule=((Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`)) && PathPrefix(`/prometheus`))
       - traefik.http.routers.prometheus-https.entrypoints=websecure
