@@ -28,7 +28,6 @@ services:
       # HTTPS Router
       - traefik.http.routers.prometheus.rule=(Host(`cv01.drintech.online`) && PathPrefix(`/prometheus`))
       - traefik.http.routers.prometheus.entrypoints=websecure
-      - traefik.http.services.prometheus.loadbalancer.server.port=9090
       - traefik.http.routers.prometheus.tls.certresolver=letsencryptresolver
       - traefik.http.routers.prometheus.service=prometheus
 
