@@ -11,19 +11,20 @@ services:
     ports:
       - "5173:5173"
     labels:
-      - traefik.enable=true
+      - "traefik.enable=true"
       # HTTP Router
-      - traefik.http.routers.frontend-http.rule=(Host(`cv01.drintech.online`) || Host(`www.cv01.drintech.online`))
-      - traefik.http.routers.frontend-http.entrypoints=web
+      - "traefik.http.routers.frontend-http.rule=(Host(`cv01.drintech.online`) || Host(`www.cv01.drintech.online`))"
+      - "traefik.http.routers.frontend-http.entrypoints=web"
+      - "traefik.http.services.frontend-http.loadbalancer.server.port=5173"
       # HTTP to HTTPS redirect
-      - traefik.http.routers.frontend-http.middlewares=https-redirect
+      - "traefik.http.routers.frontend-http.middlewares=https-redirect"
       # HTTPS Router
-      - traefik.http.routers.frontend.rule=(Host(`cv01.drintech.online`) || Host(`www.cv01.drintech.online`))
-      - traefik.http.routers.frontend.entrypoints=websecure
-      - traefik.http.routers.frontend.tls.certresolver=letsencryptresolver
-      - traefik.http.routers.frontend.middlewares=www-to-non-www-frontend
-      # Service configuration
-      - traefik.http.services.frontend.loadbalancer.server.port=5173
+      - "traefik.http.routers.frontend.rule=(Host(`cv01.drintech.online`) || Host(`www.cv01.drintech.online`))"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.services.frontend.loadbalancer.server.port=5173"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencryptresolver"
+      # - "traefik.http.routers.frontend.middlewares=www-to-non-www-frontend"
+
     networks:
       - frontend-network
 
@@ -40,14 +41,15 @@ services:
       # HTTP Router
       - traefik.http.routers.backend-http.rule=(Host(`cv01.drintech.online`) && (PathPrefix(`/api`) || PathPrefix(`/redoc`) || PathPrefix(`/docs`)))
       - traefik.http.routers.backend-http.entrypoints=web
+      - traefik.http.services.backend-http.loadbalancer.server.port=8000
       # HTTP to HTTPS redirect
       - traefik.http.routers.backend-http.middlewares=https-redirect
       # HTTPS Router
       - traefik.http.routers.backend.rule=(Host(`cv01.drintech.online`) && (PathPrefix(`/api`) || PathPrefix(`/redoc`) || PathPrefix(`/docs`)))
       - traefik.http.routers.backend.entrypoints=websecure
-      - traefik.http.routers.backend.tls.certresolver=letsencryptresolver
-      # Service configuration
       - traefik.http.services.backend.loadbalancer.server.port=8000
+      - traefik.http.routers.backend.tls.certresolver=letsencryptresolver
+      
     depends_on:
       - db
 
@@ -70,13 +72,13 @@ services:
       # HTTP Router
       - traefik.http.routers.adminer-http.rule=Host(`db.cv01.drintech.online`) || Host(`www.db.cv01.drintech.online`)
       - traefik.http.routers.adminer-http.entrypoints=web
+      - traefik.http.services.adminer-http.loadbalancer.server.port=8080
       # HTTP to HTTPS redirect
       - traefik.http.routers.adminer-http.middlewares=https-redirect
       # HTTPS Router
       - traefik.http.routers.adminer.rule=Host(`db.cv01.drintech.online`) || Host(`www.db.cv01.drintech.online`)
       - traefik.http.routers.adminer.entrypoints=websecure
       - traefik.http.routers.adminer.tls.certresolver=letsencryptresolver
-      # Service configuration
       - traefik.http.services.adminer.loadbalancer.server.port=8080
     networks:
       - backend-network
@@ -85,18 +87,18 @@ services:
     image: traefik:v2.10.1
     restart: unless-stopped
     command:
-      - --entrypoints.web.address=:80
-      - --entrypoints.web.http.redirections.entryPoint.to=websecure
-      - --entrypoints.web.http.redirections.entryPoint.scheme=https
-      - --entrypoints.websecure.address=:443
-      - --providers.docker=true
-      - --providers.docker.exposedByDefault=false
-      - --api
-      - --certificatesresolvers.letsencryptresolver.acme.email=drintech222@gmail.com
-      - --certificatesresolvers.letsencryptresolver.acme.storage=/acme.json
-      - --certificatesresolvers.letsencryptresolver.acme.tlschallenge=true
-      - --accesslog=true
-      - --log.level=ERROR
+      - "--entrypoints.web.address=:80"
+      # - --entrypoints.web.http.redirections.entryPoint.to=websecure
+      # - --entrypoints.web.http.redirections.entryPoint.scheme=https
+      - "--entrypoints.websecure.address=:443"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+      - "--api"
+      - "--certificatesresolvers.letsencryptresolver.acme.email=drintech222@gmail.com"
+      - "--certificatesresolvers.letsencryptresolver.acme.storage=/acme.json"
+      - "--certificatesresolvers.letsencryptresolver.acme.tlschallenge=true"
+      - "--accesslog=true"
+      - "--log.level=ERROR"
     ports:
       - 80:80
       - 443:443
@@ -104,22 +106,23 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /mnt/media/traefik/acme.json:/acme.json
+      - ./traefik/acme.json:/acme.json
     labels:
-      - traefik.enable=true
+      - "traefik.enable=true"
       # HTTP Router
-      - traefik.http.routers.traefik-http.rule=Host(`traefik.cv01.drintech.online`) || Host(`www.traefik.cv01.drintech.online`)
-      - traefik.http.routers.traefik-http.entrypoints=web
+      - "traefik.http.routers.traefik-http.rule=Host(`traefik.cv01.drintech.online`) || Host(`www.traefik.cv01.drintech.online`)"
+      - "traefik.http.routers.traefik-http.entrypoints=web"
+      - "traefik.http.services.traefik-http.loadbalancer.server.port=8080"
       # HTTP to HTTPS redirect
-      - traefik.http.routers.traefik-http.middlewares=https-redirect
+      - "traefik.http.routers.traefik-http.middlewares=https-redirect"
       # HTTPS Router
-      - traefik.http.routers.traefik.rule=Host(`traefik.cv01.drintech.online`) || Host(`www.traefik.cv01.drintech.online`)
-      - traefik.http.routers.traefik.entrypoints=websecure
-      - traefik.http.routers.traefik.service=api@internal
-      - traefik.http.routers.traefik.tls.certresolver=letsencryptresolver
+      - "traefik.http.routers.traefik.rule=Host(`traefik.cv01.drintech.online`) || Host(`www.traefik.cv01.drintech.online`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencryptresolver"
       # Middleware definitions
-      - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
+      # - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
+      # - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
     networks:
       - backend-network
       - frontend-network
