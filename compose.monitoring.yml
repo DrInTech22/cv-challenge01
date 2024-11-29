@@ -26,10 +26,10 @@ services:
       - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
       - traefik.http.middlewares.https-redirect.redirectScheme.permanent=true
       # HTTPS Router
-      - traefik.http.routers.prometheus.rule=(Host(`cv01.drintech.online`) && PathPrefix(`/prometheus`))
-      - traefik.http.routers.prometheus.entrypoints=websecure
-      - traefik.http.routers.prometheus.tls.certresolver=letsencryptresolver
-      - traefik.http.routers.prometheus.service=prometheus
+      - traefik.http.routers.prometheus-https.rule=(Host(`cv01.drintech.online`) && PathPrefix(`/prometheus`))
+      - traefik.http.routers.prometheus-https.entrypoints=websecure
+      - traefik.http.routers.prometheus-https.tls.certresolver=letsencryptresolver
+      - traefik.http.routers.prometheus-https.service=prometheus
 
   grafana:
     image: grafana/grafana-oss

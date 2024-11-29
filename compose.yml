@@ -13,7 +13,7 @@ services:
     labels:
       - "traefik.enable=true"
       # HTTP Router
-      - "traefik.http.routers.frontend-http.rule=(Host(`cv01.drintech.online`) || Host(`www.cv01.drintech.online`))"
+      - "traefik.http.routers.frontend-http.rule=Host(`cv01.drintech.online`)" # || Host(`www.cv01.drintech.online`))"
       - "traefik.http.routers.frontend-http.entrypoints=web"
       - "traefik.http.services.frontend-http.loadbalancer.server.port=5173"
       # HTTP to HTTPS redirect
@@ -21,9 +21,10 @@ services:
       - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
       - traefik.http.middlewares.https-redirect.redirectScheme.permanent=true
       # HTTPS Router
-      - "traefik.http.routers.frontend.rule=(Host(`cv01.drintech.online`) || Host(`www.cv01.drintech.online`))"
-      - "traefik.http.routers.frontend.entrypoints=websecure"
-      - "traefik.http.routers.frontend.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.frontend-https.rule=Host(`cv01.drintech.online`)" # || Host(`www.cv01.drintech.online`))"
+      - "traefik.http.routers.frontend-https.entrypoints=websecure"
+      - "traefik.http.routers.frontend-https.tls.certresolver=letsencryptresolver"
+      - traefik.http.routers.frontend-https.service=frontend
       # - "traefik.http.routers.frontend.middlewares=www-to-non-www-frontend"
 
     networks:
@@ -72,7 +73,7 @@ services:
     labels:
       - traefik.enable=true
       # HTTP Router
-      - traefik.http.routers.adminer-http.rule=Host(`db.cv01.drintech.online`) || Host(`www.db.cv01.drintech.online`)
+      - traefik.http.routers.adminer-http.rule=Host(`db.cv01.drintech.online`) #|| Host(`www.db.cv01.drintech.online`)
       - traefik.http.routers.adminer-http.entrypoints=web
       - traefik.http.services.adminer-http.loadbalancer.server.port=8080
       # HTTP to HTTPS redirect
@@ -80,7 +81,7 @@ services:
       - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
       - traefik.http.middlewares.https-redirect.redirectScheme.permanent=true
       # HTTPS Router
-      - traefik.http.routers.adminer.rule=Host(`db.cv01.drintech.online`) || Host(`www.db.cv01.drintech.online`)
+      - traefik.http.routers.adminer.rule=Host(`db.cv01.drintech.online`) #|| Host(`www.db.cv01.drintech.online`)
       - traefik.http.routers.adminer.entrypoints=websecure
       - traefik.http.routers.adminer.tls.certresolver=letsencryptresolver
     networks:
