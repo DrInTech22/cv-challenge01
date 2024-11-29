@@ -41,7 +41,7 @@ services:
     labels:
       - traefik.enable=true
       # HTTP Router
-      - traefik.http.routers.backend-http.rule=(Host(`cv01.drintech.online`) && (PathPrefix(`/api`) || PathPrefix(`/redoc`) || PathPrefix(`/docs`)))
+      - traefik.http.routers.backend-http.rule=((Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`)) && (PathPrefix(`/api`) || PathPrefix(`/redoc`) || PathPrefix(`/docs`)))
       - traefik.http.routers.backend-http.entrypoints=web
       - traefik.http.services.backend-http.loadbalancer.server.port=8000
       # HTTP to HTTPS redirect

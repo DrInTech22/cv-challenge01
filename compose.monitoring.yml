@@ -19,7 +19,7 @@ services:
       # HTTP Service
       - traefik.http.services.prometheus.loadbalancer.server.port=9090
       # HTTP Router ()
-      - traefik.http.routers.prometheus-http.rule=(Host(`cv01.drintech.online`) && PathPrefix(`/prometheus`))
+      - traefik.http.routers.prometheus-http.rule=((Host(`cv01.drintech.online`)  || Host(`www.cv01.drintech.online`)) && PathPrefix(`/prometheus`))
       - traefik.http.routers.prometheus-http.entrypoints=web
       # HTTP to HTTPS redirect
       - traefik.http.routers.prometheus-http.middlewares=https-redirect
@@ -29,7 +29,7 @@ services:
       - traefik.http.routers.prometheus-https.rule=(Host(`cv01.drintech.online`) && PathPrefix(`/prometheus`))
       - traefik.http.routers.prometheus-https.entrypoints=websecure
       - traefik.http.routers.prometheus-https.tls.certresolver=letsencryptresolver
-      - traefik.http.routers.prometheus-https.service=prometheus
+      - traefik.http.routers.prometheus-https.service=prometheus # optional
 
   grafana:
     image: grafana/grafana-oss
