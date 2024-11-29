@@ -8,8 +8,24 @@ services:
       - frontend/.env
     depends_on:
       - backend
-    expose:
-      - "5173"
+    ports:
+      - "5173:5173"
+    labels:
+      - "traefik.enable=true"
+      # HTTP Router
+      - "traefik.http.routers.frontend-http.rule=(Host(`cv01.drintech.online`) || Host(`www.cv01.drintech.online`))"
+      - "traefik.http.routers.frontend-http.entrypoints=web"
+      - "traefik.http.services.frontend-http.loadbalancer.server.port=5173"
+      # HTTP to HTTPS redirect
+      - "traefik.http.routers.frontend-http.middlewares=https-redirect"
+      - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
+      - traefik.http.middlewares.https-redirect.redirectScheme.permanent=true
+      # HTTPS Router
+      - "traefik.http.routers.frontend.rule=(Host(`cv01.drintech.online`) || Host(`www.cv01.drintech.online`))"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencryptresolver"
+      # - "traefik.http.routers.frontend.middlewares=www-to-non-www-frontend"
+
     networks:
       - frontend-network
 
@@ -18,79 +34,105 @@ services:
       context: ./backend
     env_file:
       - backend/.env
-    expose:
-      - "8000"
     networks:
       - frontend-network
       - backend-network
+    labels:
+      - traefik.enable=true
+      # HTTP Router
+      - traefik.http.routers.backend-http.rule=(Host(`cv01.drintech.online`) && (PathPrefix(`/api`) || PathPrefix(`/redoc`) || PathPrefix(`/docs`)))
+      - traefik.http.routers.backend-http.entrypoints=web
+      - traefik.http.services.backend-http.loadbalancer.server.port=8000
+      # HTTP to HTTPS redirect
+      - traefik.http.routers.backend-http.middlewares=https-redirect
+      - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
+      - traefik.http.middlewares.https-redirect.redirectScheme.permanent=true
+      # HTTPS Router
+      - traefik.http.routers.backend.rule=(Host(`cv01.drintech.online`) && (PathPrefix(`/api`) || PathPrefix(`/redoc`) || PathPrefix(`/docs`)))
+      - traefik.http.routers.backend.entrypoints=websecure
+      - traefik.http.routers.backend.tls.certresolver=letsencryptresolver
+      
     depends_on:
       - db
 
   db:
     image: postgres:13
     environment:
-      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
-      POSTGRES_USER: app
       POSTGRES_DB: app
-    secrets:
-      - postgres_password
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: changethis123
     networks:
       - backend-network
-    expose:
-      - "5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
 
   adminer:
     image: adminer
     restart: always
     environment:
       ADMINER_DEFAULT_SERVER: db
+    labels:
+      - traefik.enable=true
+      # HTTP Router
+      - traefik.http.routers.adminer-http.rule=Host(`db.cv01.drintech.online`) || Host(`www.db.cv01.drintech.online`)
+      - traefik.http.routers.adminer-http.entrypoints=web
+      - traefik.http.services.adminer-http.loadbalancer.server.port=8080
+      # HTTP to HTTPS redirect
+      - traefik.http.routers.adminer-http.middlewares=https-redirect
+      - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
+      - traefik.http.middlewares.https-redirect.redirectScheme.permanent=true
+      # HTTPS Router
+      - traefik.http.routers.adminer.rule=Host(`db.cv01.drintech.online`) || Host(`www.db.cv01.drintech.online`)
+      - traefik.http.routers.adminer.entrypoints=websecure
+      - traefik.http.routers.adminer.tls.certresolver=letsencryptresolver
+      - traefik.http.services.adminer.loadbalancer.server.port=8080
     networks:
       - backend-network
-    expose:
-      - "8080"
-  nginx:
-    image: 'jc21/nginx-proxy-manager:2.10.4'
+
+  traefik:
+    image: traefik:v2.10.1
+    restart: unless-stopped
+    command:
+      - "--entrypoints.web.address=:80"
+      # - --entrypoints.web.http.redirections.entryPoint.to=websecure
+      # - --entrypoints.web.http.redirections.entryPoint.scheme=https
+      - "--entrypoints.websecure.address=:443"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+      - "--api"
+      - "--certificatesresolvers.letsencryptresolver.acme.email=drintech222@gmail.com"
+      - "--certificatesresolvers.letsencryptresolver.acme.storage=/acme.json"
+      - "--certificatesresolvers.letsencryptresolver.acme.tlschallenge=true"
+      - "--accesslog=true"
+      - "--log.level=ERROR"
     ports:
-      - '80:80'
-      - '443:443'
-      - '8090:81'
-    environment:
-      DB_SQLITE_FILE: "/data/database.sqlite"
+      - 80:80
+      - 443:443
+      - 8080:8080
     volumes:
-      - data:/data
-      - letsencrypt:/etc/letsencrypt
-      #- ./nginx/nginx.conf:/data/nginx/custom/http_top.conf
-    restart: always
-    depends_on:
-      - frontend
-      - backend
-      - adminer
-      - prometheus
-      - grafana
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/acme.json:/acme.json
+    labels:
+      - "traefik.enable=true"
+      # HTTP Router
+      - "traefik.http.routers.traefik-http.rule=Host(`traefik.cv01.drintech.online`) || Host(`www.traefik.cv01.drintech.online`)"
+      - "traefik.http.routers.traefik-http.entrypoints=web"
+      - "traefik.http.services.traefik-http.loadbalancer.server.port=8080"
+      # HTTP to HTTPS redirect
+      - "traefik.http.routers.traefik-http.middlewares=https-redirect"
+      # HTTPS Router
+      - "traefik.http.routers.traefik.rule=Host(`traefik.cv01.drintech.online`) || Host(`www.traefik.cv01.drintech.online`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencryptresolver"
+      # Middleware definitions
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
     networks:
-      - frontend-network
       - backend-network
+      - frontend-network
 
 networks:
   frontend-network:
   backend-network:
 volumes:
   postgres_data:
-  data:
-  letsencrypt:
-
-secrets:
-   postgres_password:
-     file: ./POSTGRES_PASSWORD.txt
-
-
-
-
-
-
-
-
-
-
