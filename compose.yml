@@ -75,7 +75,7 @@ services:
       # HTTP Router
       - traefik.http.routers.adminer-http.rule=Host(`db.cv01.drintech.online`) || Host(`www.db.cv01.drintech.online`)
       - traefik.http.routers.adminer-http.entrypoints=web
-      - traefik.http.services.adminer-http.loadbalancer.server.port=8080
+      - traefik.http.services.adminer.loadbalancer.server.port=8080
       # HTTP to HTTPS redirect
       - traefik.http.routers.adminer-http.middlewares=https-redirect
       - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
