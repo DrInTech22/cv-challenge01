@@ -23,8 +23,8 @@ services:
       - traefik.http.routers.prometheus-http.entrypoints=web
       # HTTP to HTTPS redirect
       - traefik.http.routers.prometheus-http.middlewares=https-redirect
-      # - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
-      # - traefik.http.middlewares.https-redirect.redirectScheme.permanent=true
+      - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
+      - traefik.http.middlewares.https-redirect.redirectScheme.permanent=true
       # HTTPS Router
       - traefik.http.routers.prometheus.rule=(Host(`cv01.drintech.online`) && PathPrefix(`/prometheus`))
       - traefik.http.routers.prometheus.entrypoints=websecure
@@ -48,8 +48,8 @@ services:
       - traefik.http.routers.grafana-http.service=grafana
       # HTTP to HTTPS redirect
       - traefik.http.routers.grafana-http.middlewares=https-redirect
-      # - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
-      # - traefik.http.middlewares.https-redirect.redirectScheme.permanent=true
+      - traefik.http.middlewares.https-redirect.redirectScheme.scheme=https
+      - traefik.http.middlewares.https-redirect.redirectScheme.permanent=true
       # HTTPS Router
       - traefik.http.routers.grafana-https.rule=(Host(`cv01.drintech.online`) && PathPrefix(`/grafana`))
       - traefik.http.routers.grafana-https.entrypoints=websecure
